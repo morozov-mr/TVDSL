@@ -73,7 +73,7 @@ public class TypeChecker {
         }
     }
 
-    //signature check
+    //function signature check
     private void registerFormula(Map<String, Object> f) {
         String name = (String) f.get("name");
         if (formulas.containsKey(name) || functions.containsKey(name))
@@ -90,7 +90,7 @@ public class TypeChecker {
         }
     }
 
-    //signature check
+    //function signature check
     private void registerFunction(Map<String, Object> f) {
         String name = (String) f.get("name");
         if (functions.containsKey(name) || formulas.containsKey(name))
@@ -114,7 +114,6 @@ public class TypeChecker {
 
     //inner function scope analysis
     private void checkFunction(Map<String, Object> f) {
-        //params scope
         Scope paramScope = new Scope(null);
         List<Map<String, Object>> params = (List<Map<String, Object>>) f.get("params");
         if (params != null) {
@@ -124,11 +123,10 @@ public class TypeChecker {
                     error(p, "Повторное объявление параметра '" + pName + "'");
             }
         }
-        //requires
+
         if (f.get("requires") != null)
             checkPredicate((Map<String, Object>) f.get("requires"), paramScope);
 
-        //params of returns
         Scope fullScope = new Scope(paramScope);
         List<Map<String, Object>> returns = (List<Map<String, Object>>) f.get("returns");
         if (returns != null) {
@@ -139,7 +137,6 @@ public class TypeChecker {
             }
         }
 
-        //uses
         List<Map<String, Object>> uses = (List<Map<String, Object>>) f.get("uses");
         if (uses != null) {
             for (Map<String, Object> u : uses) {
@@ -151,11 +148,9 @@ public class TypeChecker {
             }
         }
 
-        //ensures
         if (f.get("ensures") != null)
             checkPredicate((Map<String, Object>) f.get("ensures"), fullScope);
         Map<String, Object> body = (Map<String, Object>) f.get("body");
-        //body
         if (body != null)
             checkStmt(body, fullScope);
     }
@@ -216,7 +211,7 @@ public class TypeChecker {
             if (fInfo.returnTypes.size() != targets.size())
                 error(value, "Несоответствие числа возвращаемых значений (" + fInfo.returnTypes.size() + ") и целей (" + targets.size() + ")");
 
-            //target function check
+            //check assignment target
             checkCallArgs((List<Map<String, Object>>) value.get("arguments"), fInfo.paramTypes, value, scope);
             int limit = Math.min(targets.size(), fInfo.returnTypes.size());
             for (int i = 0; i < limit; i++)
